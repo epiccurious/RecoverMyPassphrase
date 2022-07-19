@@ -19,18 +19,18 @@ pip install mnemonic
 # sudo apt install -y tor=0.4.2.7-1
 
 ## delete existing files, if they exist (in case the script was run multiple times)
-rm -rf ~/pr/bitcoin
-rm -f ~/pr/bitcoin-22.0-x86_64-linux-gnu.tar.gz
+rm -rf ~/rp/bitcoin
+rm -f ~/rp/bitcoin-22.0-x86_64-linux-gnu.tar.gz
 
-## download to the ~/pr directory and install Bitcoin Core tarball 
-wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz -P ~/pr
-tar xzvf ~/pr/bitcoin-22.0-x86_64-linux-gnu.tar.gz -C ~/pr
+## download to the ~/rp directory and install Bitcoin Core tarball 
+wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz -P ~/rp
+tar xzvf ~/rp/bitcoin-22.0-x86_64-linux-gnu.tar.gz -C ~/rp
 
-mv ~/pr/bitcoin-22.0 ~/pr/bitcoin
+mv ~/rp/bitcoin-22.0 ~/rp/bitcoin
 
 ## set the Bitcoin Core binaries to executable
-chmod +x ~/pr/bitcoin/bin/bitcoin-qt
-chmod +x ~/pr/bitcoin/bin/bitcoin-cli
+chmod +x ~/rp/bitcoin/bin/bitcoin-qt
+chmod +x ~/rp/bitcoin/bin/bitcoin-cli
 
 ## create a fresh .bitcoin directory and prune the blockchain to 20gb
 rm -rf ~/.bitcoin
@@ -39,7 +39,7 @@ echo "prune=20000" > ~/.bitcoin/bitcoin.conf
 
 ## clear the terminal and launch bitcoin-qt 
 clear
-~/pr/bitcoin/bin/bitcoin-qt &
+~/rp/bitcoin/bin/bitcoin-qt &
 
 echo "Bitcoin blockchain is now synchronizing.
 This may take a couple days to a couple weeks depending on the speed of your machine and connection.
@@ -58,9 +58,9 @@ Do not close this terminal window."
 sleep 10
 
 
-blockchain_info=$(~/pr/bitcoin/bin/bitcoin-cli getblockchaininfo)
+blockchain_info=$(~/rp/bitcoin/bin/bitcoin-cli getblockchaininfo)
 ibd_status=$(echo "$blockchain_info" | grep "initialblockdownload" | head -c30 | tail -c4)
-ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8 > ~/pwr/syncprogress.txt)
+ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8 > ~/rp/syncprogress.txt)
 
 # wait until blockchain sync is at least 0.01% complete
 while [[ "$ibd_status" == "true" || "$ibd_status" == "" ]]
@@ -78,7 +78,7 @@ This window will update about every 30 seconds."
    sleep 30
    
    # update the sync status, trim to the sixth character from the end, and save to a file syncprogress.txt
-   blockchain_info=$(~/pr/bitcoin/bin/bitcoin-cli getblockchaininfo)
+   blockchain_info=$(~/rp/bitcoin/bin/bitcoin-cli getblockchaininfo)
    ibd_status=$(echo "$blockchain_info" | grep "initialblockdownload" | head -c30 | tail -c4)
    ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8)
 done
@@ -102,14 +102,14 @@ read -n1
 nmcli networking off
 
 ## create a wallet
-#~/pwr/bitcoin/bin/bitcoin-cli createwallet pr false true "" true false true
+#~/rp/bitcoin/bin/bitcoin-cli createwallet rp false true "" true false true
 
 ## execute the python script to generate WIF-format seeds using the mnemonic library
-#python3 ~/passphraseRecovery/
+#python3 ~/rp/generate_keys.py
 
-## iterate through the list generated WIF-format seeds and check the balances
+## iterate through the list generated WIF-format keys
 #for each line in the file...
-#~/pr/bitcoin/bin/bitcoin-cli sethseed false <WIF seed>
+#~/rp/bitcoin/bin/bitcoin-cli sethseed false <WIF seed>
 #then check the balance
 #if a balance exists, use the line number (iterator)
 #to check the passphrase list to get the associated passphrase
