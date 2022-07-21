@@ -1,8 +1,6 @@
 # RecoverPassphrase
 Attempt to recover your bitcoin funds through brute force in the event you lose/forget your BIP39 passphrase. NOTE: This project assumes you used a Trezor to generate the passphrase-protected wallet and know all 24 of your BIP39 mnemonic seed words.
 
-assphrase-protected wallet and know all 24 of your BIP39 mnemonic seed words.
-
 WARNING!!!! Code is under development. DO NOT TRUST THIS CODE WITH YOUR SEED WORDS YET. This code should be used for research, testing, and development purposes until further notice.
 
 WHAT THIS CODE DOES (ERR...WILL DO ONCE IT'S RELEASED...IT'S NOT RELEASED YET.)
