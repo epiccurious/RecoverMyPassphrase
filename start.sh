@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## update the apt package list then install upgrades
-sudo apt update && sudo apt upgrade
+sudo apt update && sudo apt upgrade -y
 
 ## enable automatic installation of upgrades in debug mode
 sudo unattended-upgrade -d
@@ -19,18 +19,18 @@ pip install mnemonic
 # sudo apt install -y tor=0.4.2.7-1
 
 ## delete existing files, if they exist (in case the script was run multiple times)
-rm -rf ~/rp/bitcoin
-rm -f ~/rp/bitcoin-22.0-x86_64-linux-gnu.tar.gz
+rm -rf ~/rmp/bitcoin
+rm -f ~/rmp/bitcoin-22.0-x86_64-linux-gnu.tar.gz
 
-## download to the ~/rp directory and install Bitcoin Core tarball 
-wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz -P ~/rp
-tar xzvf ~/rp/bitcoin-22.0-x86_64-linux-gnu.tar.gz -C ~/rp
+## download to the ~/rmp directory and install Bitcoin Core tarball 
+wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz -P ~/rmp
+tar xzvf ~/rmp/bitcoin-22.0-x86_64-linux-gnu.tar.gz -C ~/rmp
 
-mv ~/rp/bitcoin-22.0 ~/rp/bitcoin
+mv ~/rmp/bitcoin-22.0 ~/rmp/bitcoin
 
 ## set the Bitcoin Core binaries to executable
-chmod +x ~/rp/bitcoin/bin/bitcoin-qt
-chmod +x ~/rp/bitcoin/bin/bitcoin-cli
+chmod +x ~/rmp/bitcoin/bin/bitcoin-qt
+chmod +x ~/rmp/bitcoin/bin/bitcoin-cli
 
 ## create a fresh .bitcoin directory and prune the blockchain to 20gb
 rm -rf ~/.bitcoin
@@ -39,7 +39,7 @@ echo "prune=20000" > ~/.bitcoin/bitcoin.conf
 
 ## clear the terminal and launch bitcoin-qt 
 clear
-~/rp/bitcoin/bin/bitcoin-qt &
+~/rmp/bitcoin/bin/bitcoin-qt &
 
 echo "Bitcoin blockchain is now synchronizing.
 This may take a couple days to a couple weeks depending on the speed of your machine and connection.
@@ -58,9 +58,9 @@ Do not close this terminal window."
 sleep 10
 
 
-blockchain_info=$(~/rp/bitcoin/bin/bitcoin-cli getblockchaininfo)
+blockchain_info=$(~/rmp/bitcoin/bin/bitcoin-cli getblockchaininfo)
 ibd_status=$(echo "$blockchain_info" | grep "initialblockdownload" | head -c30 | tail -c4)
-ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8 > ~/rp/syncprogress.txt)
+ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8 > ~/rmp/syncprogress.txt)
 
 # wait until blockchain sync is at least 0.01% complete
 while [[ "$ibd_status" == "true" || "$ibd_status" == "" ]]
@@ -78,7 +78,7 @@ This window will update about every 30 seconds."
    sleep 30
    
    # update the sync status, trim to the sixth character from the end, and save to a file syncprogress.txt
-   blockchain_info=$(~/rp/bitcoin/bin/bitcoin-cli getblockchaininfo)
+   blockchain_info=$(~/rmp/bitcoin/bin/bitcoin-cli getblockchaininfo)
    ibd_status=$(echo "$blockchain_info" | grep "initialblockdownload" | head -c30 | tail -c4)
    ibd_progress=$(echo "$blockchain_info" | grep "verificationprogress" | head -c34 | tail -c8)
 done
@@ -102,16 +102,22 @@ read -n1
 nmcli networking off
 
 ## create a wallet
-#~/rp/bitcoin/bin/bitcoin-cli createwallet rp false true "" true false true
+#~/rmp/bitcoin/bin/bitcoin-cli createwallet rmp false true "" true false true
+
+#STEP TO BE WRITTEN WILL BE TO INPUT THE 24 SEED WORDS FROM THE USER, VALIDATING THEM ONE AT A TIME AGAINST THE FILE seed_words.
+#SAVE THE 24 WORDS SEPARATED BY SPACES TO A FILE user_seed.
+
+#OPTIONAL STEP TO ADD ONCE THIS SCRIPT IS WRITTEN - CHECKSUM THE SEED WORDS AND REPORT TO THE USER IF IT FAILS.
 
 ## execute the python script to generate WIF-format seeds using the mnemonic library
-#python3 ~/rp/generate_keys.py
+## which will use the words from user_seed the openwall_passwords to generate WIF-format keys and save then to a new file wif_keys.
+#python3 ~/rmp/generate_keys.py
 
-## iterate through the list generated WIF-format keys
+## iterate through wif_keys, the list of generated WIF-format keys
 #for each line in the file...
-#~/rp/bitcoin/bin/bitcoin-cli sethseed false <WIF seed>
+#~/rmp/bitcoin/bin/bitcoin-cli sethseed false <WIF seed>
 #then check the balance
 #if a balance exists, use the line number (iterator)
 #to check the passphrase list to get the associated passphrase
-#the  write the passphrase, WIF-format seed and balance amount to a new file.
-#alert the user that a balance of XX was found
+#then write the passphrase, WIF-format seed and balance amount to a new file found_money.
+#echo to the user that "a balance of XX was found using passphrase YYYY."
