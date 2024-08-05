@@ -1,3 +1,4 @@
+import sys
 from mnemonic import Mnemonic
 from bip32utils import BIP32Key
 
@@ -28,14 +29,17 @@ def derive_private_keys(seed_phrase: str, passphrase: str) -> str:
         child_key = root_key.ChildKey(derivation_path).ChildKey(0).ChildKey(0)
         # Convert private key to WIF format
         private_key = child_key.WalletImportFormat()
-        print('Private key is: ' + private_key)
         # Add the private key to the array of WIF-format keys
         private_keys.append(private_key)
     
     # Return an array of strings of WIF-format private keys
     return private_keys
 
-def remove_wif_duplicates(file_path):
+def load_password_list(file_path: str) -> list[str]:
+    with open(file_path, 'r') as file:
+        return [line.strip() for line in file]
+
+def remove_wif_duplicates(file_path: str):
     output_path = file_path
 
     lines = open(file_path, 'r').readlines()
@@ -47,21 +51,49 @@ def remove_wif_duplicates(file_path):
 
 def main():
     output_file_path='wif_private_keys'
+    # password_list_path='openwall/openwall_passwords'
+    # Use mini file for development and debugging only
+    password_list_path='openwall/openwall_passwords_mini'
 
     # Define your BIP39 seed phrase and passphrase
     seed_phrase = 'program traffic coil weather sleep black push retreat recall oil chief cement ability tonight must give margin tragic risk edit page impose assist dust'
-    passphrase = 'apple'
+    #passphrase = 'apple'
+    try:
+        password_list = load_password_list(password_list_path)
+    except Exception as e:
+        print(f'Error loading password list from {password_list_path}: {e}')
+        sys.exit(1)
 
-    # Derive the private key
-    wif_private_keys_to_import = derive_private_keys(seed_phrase, passphrase)
+    # Open the output file in write mode to clear any existing contents
+    with open(output_file_path, 'w') as output_file:
+        # Iterate throuch each password
+        for passphrase_to_check in password_list:
+            print(f'Found a password: {passphrase_to_check}')
 
-    # Print the private keys
-    print("The BIP32 private keys are:")
-    for wif_private_key in wif_private_keys_to_import:
-        print('The BIP32 private key is:   ' + wif_private_key)
-        open(output_file_path,'a+').write(f"{wif_private_key}\n")
+            # Derive the WIF-format private keys to import into Bitcoin Core
+            try:
+                wif_private_keys_to_import = derive_private_keys(seed_phrase, passphrase_to_check)
+            except Exception as e:
+                print(f'Error deriving private keys for passphrase {passphrase_to_check}: {e}')
+                sys.exit(1)
 
-    remove_wif_duplicates(output_file_path)
+            # Save the passphrase and each WIF key to the output file
+            try:
+                output_file.write(f'passphrase={passphrase_to_check}\n')
+                # Print the private keys
+                print(f'The BIP32 private keys for {passphrase_to_check} are:')
+                for wif_private_key in wif_private_keys_to_import:
+                    print(f'The WIF-format private key is: {wif_private_key}')
+                    output_file.write(f"{wif_private_key}\n")
+            except Exception as e:
+                print(f'Error trying to write to file {output_file_path}: {e}')
+                sys.exit(1)
+    
+    # try:
+    #     remove_wif_duplicates(output_file_path)
+    # except Exception as e:
+    #     print(f'Error removing duplicates from {output_file_path}: {e}')
+    #     sys.exit(1)
 
 if __name__ == "__main__":
     main()

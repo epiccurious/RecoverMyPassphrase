@@ -44,7 +44,7 @@ clear
 echo "Bitcoin blockchain is now synchronizing.
 This may take a couple days to a couple weeks depending on the speed of your machine and connection.
 Keep your computer connected to A/C power and the Internet. If you get disconnected or your computer hangs, rerun this script.
-To maximize the chances everything goes smoothly, sleep and suspend will be disabled.
+To maximize the chances everything goes smoothly, sleep and suspend will be disabled."
 echo
 
 ## disable system sleep, suspend, hibernate, and hybrid-sleep
@@ -121,3 +121,34 @@ nmcli networking off
 #to check the passphrase list to get the associated passphrase
 #then write the passphrase, WIF-format seed and balance amount to a new file found_money.
 #echo to the user that "a balance of XX was found using passphrase YYYY."
+
+python3 generate_bip32_seeds.py
+
+wif_keys_file='wif_private_keys'
+passphrase=''
+
+# Iterate over each line in the input file
+for line in $(cat "${wif_keys_file}"); do
+    case "${line}" in
+        passphrase=*)
+            # Extract the passphrase
+            passphrase="${line#passphrase=}"
+            echo "New passphrase set: ${passphrase}"
+            ;;
+
+        L*|K*)
+            # Import the private key into Bitcoin Core
+            private_key="${line}"
+            echo "Importing private key: ${private_key}"
+
+            # Use bitcoin-cli to import the private key
+            # Replace `your_wallet_name` with the actual wallet name or omit if not using a specific wallet
+            bitcoin-cli importprivkey "${private_key}"
+            ;;
+
+        *)
+            # Handle any unexpected lines if necessary
+            echo "Unrecognized line: ${line}"
+            ;;
+    esac
+done
